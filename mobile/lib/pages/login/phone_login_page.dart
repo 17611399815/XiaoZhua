@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../services/app_provider.dart';
+import '../../services/api_service.dart';
 import '../../models/pet.dart';
 
 class PhoneLoginPage extends StatefulWidget {
@@ -48,7 +49,7 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
     ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('验证码 1234 已发送（测试默认 1234 登录）')));
   }
 
-  void _login() {
+  Future<void> _login() async {
     final phone = _phoneCtrl.text.trim();
     final code = _codeCtrl.text.trim();
     if (phone.isEmpty || code.isEmpty) {
@@ -60,12 +61,38 @@ class _PhoneLoginPageState extends State<PhoneLoginPage> {
       return;
     }
     setState(() => _loading = true);
-    // Simulate login delay
-    Future.delayed(const Duration(milliseconds: 500), () {
+    try {
+      final apiService = ApiService();
+      final res = await apiService.auth.login(phone, code);
+      final data = res['data'] as Map<String, dynamic>? ?? {};
+      final userMap = data['user'] as Map<String, dynamic>? ?? {};
+      final petsList = userMap['pets'] as List<dynamic>? ?? [];
+
       if (!mounted) return;
       setState(() => _loading = false);
-      Navigator.of(context).pushNamed('/profile-setup');
-    });
+
+      final provider = context.read<AppProvider>();
+      
+      if (petsList.isNotEmpty) {
+        // Log in with the first pet
+        final firstPetJson = petsList[0] as Map<String, dynamic>;
+        final pet = Pet.fromJson(firstPetJson);
+        provider.loginWithFirstPet(pet);
+        provider.seedDemoData();
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('登录成功！欢迎回来，${pet.name}的铲屎官～ 🐾')));
+        Navigator.of(context).pushNamedAndRemoveUntil('/home', (route) => false);
+      } else {
+        // Go to onboarding flow (/profile-setup) and pass phone
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('登录成功！请先为您的爱宠建档～ ✨')));
+        Navigator.of(context).pushNamed('/profile-setup', arguments: phone);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('登录失败，已开启离线建档体验: $e')));
+      // Graceful fallback to onboarding flow
+      Navigator.of(context).pushNamed('/profile-setup', arguments: phone);
+    }
   }
 
   void _quickLogin(String phone) {

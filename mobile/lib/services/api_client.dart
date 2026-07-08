@@ -1,9 +1,18 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 
 /// 统一 API 客户端，负责 Token 注入、请求/响应处理、错误拦截。
 class ApiClient {
-  static const String _baseUrl = 'http://localhost:3000/api/v1';
+  static String get _baseUrl {
+    if (kIsWeb) {
+      final origin = Uri.base.origin;
+      if (origin.isNotEmpty && origin.startsWith('http')) {
+        return '$origin/api/v1';
+      }
+    }
+    return 'http://localhost:3000/api/v1';
+  }
 
   String? _token;
   final http.Client _client;
