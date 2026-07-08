@@ -1,0 +1,6 @@
+{
+  "name": "小爪 APP 独立移动端开发控制台",
+  "description": "🐾 专为小爪 APP 设计的移动端独立控制台与 Flutter 跨平台架构代码浏览器，支持模拟手机交互、商城筛选、宠物健康管理与 Gemini 智能管家。",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

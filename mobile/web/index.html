@@ -1,0 +1,62 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>小爪 - 宠物管家</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: "PingFang SC", "Microsoft YaHei", -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #fff8e1;
+    }
+    #loading {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      color: #fe9a00;
+    }
+    #loading h1 {
+      font-size: 24px;
+      margin: 20px 0 10px;
+      font-weight: 900;
+    }
+    #loading .tagline {
+      font-size: 14px;
+      color: #99a1af;
+      margin-top: 8px;
+    }
+    .loader {
+      width: 48px;
+      height: 48px;
+      border: 4px solid #ffd66b;
+      border-top-color: #fe9a00;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .emoji-banner {
+      font-size: 64px;
+      margin-bottom: 8px;
+    }
+  </style>
+  <base href="$FLUTTER_BASE_HREF">
+</head>
+<body>
+  <div id="flutter-app" style="width: 100%; height: 100vh;"></div>
+  <div id="loading">
+    <div class="emoji-banner">🐾</div>
+    <div class="loader"></div>
+    <h1 id="loading-text">小爪 正在加载...</h1>
+    <p class="tagline">记录每一个爪印时刻</p>
+  </div>
+  <script src="flutter_bootstrap.js" async></script>
+</body>
+</html>
+

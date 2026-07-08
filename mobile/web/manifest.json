@@ -1,0 +1,12 @@
+{
+  "name": "小爪 - 宠物管家",
+  "short_name": "小爪",
+  "description": "记录每一个爪印时刻 - 你的毛孩子专属管家",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#fff8e1",
+  "theme_color": "#ffb900",
+  "orientation": "portrait",
+  "prefer_related_applications": false,
+  "icons": []
+}

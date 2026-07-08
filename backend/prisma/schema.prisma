@@ -1,0 +1,308 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ──────────────────────────── 用户 ────────────────────────────
+model User {
+  id        String   @id @default(uuid())
+  phone     String   @unique
+  nickname  String?
+  avatarUrl String?
+  status    String   @default("active")  // active | disabled
+  role      String   @default("user")    // user | admin
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  pets           Pet[]
+  reminders      Reminder[]
+  expenses       Expense[]
+  recipes        Recipe[]
+  notes          Note[]
+  weightRecords  WeightRecord[]
+  medicalRecords MedicalRecord[]
+  stockItems     StockItem[]
+  albumPhotos    AlbumPhoto[]
+  cartItems      CartItem[]
+  orders         Order[]
+  refreshTokens  RefreshToken[]
+
+  @@map("users")
+}
+
+// ──────────────────────────── 宠物 ────────────────────────────
+model Pet {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  name       String
+  gender     String    // '男孩' | '女孩'
+  type       String    // '猫咪' | '狗狗' | '其他'
+  breed      String    @default("")
+  birthday   String?   // 'YYYY年M月D日'
+  meetDate   DateTime  @map("meet_date")
+  weight     Float     @default(0)
+  isNeutered Boolean   @default(false) @map("is_neutered")
+  emoji      String    @default("🐶")
+  avatarUrl  String?   @map("avatar_url")
+  isCurrent  Boolean   @default(false) @map("is_current")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reminders      Reminder[]
+  expenses       Expense[]
+  recipes        Recipe[]
+  notes          Note[]
+  weightRecords  WeightRecord[]
+  medicalRecords MedicalRecord[]
+  stockItems     StockItem[]
+  albumPhotos    AlbumPhoto[]
+
+  @@index([userId])
+  @@map("pets")
+}
+
+// ──────────────────────────── 提醒 ────────────────────────────
+model Reminder {
+  id          String   @id @default(uuid())
+  petId       String   @map("pet_id")
+  userId      String   @map("user_id")
+  title       String
+  type        String   // birthday|vaccine|deworm|bath|medical|custom
+  description String?
+  remindDate  DateTime @map("remind_date")
+  remindTime  String   @map("remind_time") // '09:00'
+  isCompleted Boolean  @default(false) @map("is_completed")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([petId])
+  @@index([remindDate])
+  @@map("reminders")
+}
+
+// ──────────────────────────── 记账 ────────────────────────────
+model Expense {
+  id          String   @id @default(uuid())
+  petId       String   @map("pet_id")
+  userId      String   @map("user_id")
+  category    String   // food|medical|toy|bath|insurance|other
+  amount      Float
+  note        String?
+  expenseDate DateTime @map("expense_date")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([petId])
+  @@map("expenses")
+}
+
+// ──────────────────────────── 食谱 ────────────────────────────
+model Recipe {
+  id        String   @id @default(uuid())
+  petId     String   @map("pet_id")
+  userId    String   @map("user_id")
+  food      String
+  amount    String?  // '200g'
+  frequency String?  // '每日一次'
+  feedTime  DateTime @map("feed_time")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("recipes")
+}
+
+// ──────────────────────────── 记事 ────────────────────────────
+model Note {
+  id        String   @id @default(uuid())
+  petId     String   @map("pet_id")
+  userId    String   @map("user_id")
+  title     String
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notes")
+}
+
+// ──────────────────────────── 体重记录 ────────────────────────────
+model WeightRecord {
+  id         String   @id @default(uuid())
+  petId      String   @map("pet_id")
+  userId     String   @map("user_id")
+  weight     Float
+  recordDate DateTime @map("record_date")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([petId, recordDate])
+  @@map("weight_records")
+}
+
+// ──────────────────────────── 病历 ────────────────────────────
+model MedicalRecord {
+  id        String   @id @default(uuid())
+  petId     String   @map("pet_id")
+  userId    String   @map("user_id")
+  title     String
+  visitDate DateTime @map("visit_date")
+  hospital  String?
+  symptoms  String?
+  diagnosis String?
+  treatment String?
+  cost      String?  // '¥680'
+  createdAt DateTime @default(now()) @map("created_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("medical_records")
+}
+
+// ──────────────────────────── 囤货/库存 ────────────────────────────
+model StockItem {
+  id        String   @id @default(uuid())
+  petId     String   @map("pet_id")
+  userId    String   @map("user_id")
+  name      String
+  brand     String   @default("")
+  category  String   // food|supplies|medicine|toy
+  remaining Int      @default(0)
+  total     Int      @default(0)
+  unit      String   @default("个")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("stock_items")
+}
+
+// ──────────────────────────── 相册 ────────────────────────────
+model AlbumPhoto {
+  id           String    @id @default(uuid())
+  petId        String    @map("pet_id")
+  userId       String    @map("user_id")
+  imageUrl     String    @map("image_url")
+  thumbnailUrl String?   @map("thumbnail_url")
+  description  String?
+  takenDate    DateTime? @map("taken_date")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  pet  Pet  @relation(fields: [petId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([petId, takenDate])
+  @@map("album_photos")
+}
+
+// ──────────────────────────── 商城商品 ────────────────────────────
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  description String?
+  emoji       String   @default("📦")
+  category    String   // food|snack|supplies|toy|medicine|clothing
+  price       Float
+  imageUrl    String?  @map("image_url")
+  stock       Int      @default(0)
+  isOnSale    Boolean  @default(true) @map("is_on_sale")
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([category, isOnSale])
+  @@map("products")
+}
+
+// ──────────────────────────── 购物车 ────────────────────────────
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
+
+// ──────────────────────────── 订单 ────────────────────────────
+model Order {
+  id          String   @id @default(uuid())
+  userId      String   @map("user_id")
+  totalAmount Float    @map("total_amount")
+  status      String   @default("pending") // pending|paid|shipped|completed|cancelled
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user  User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(uuid())
+  orderId   String @map("order_id")
+  productId String @map("product_id")
+  quantity  Int
+  price     Float
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: NoAction)
+
+  @@map("order_items")
+}
+
+// ──────────────────────────── Refresh Token ────────────────────────────
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  token     String   @unique
+  expiresAt DateTime @map("expires_at")
+  revoked   Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ──────────────────────────── 管理员 ────────────────────────────
+model Admin {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  password  String
+  role      String   @default("admin") // admin | super_admin
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
