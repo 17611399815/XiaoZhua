@@ -9,238 +9,274 @@ class ShopPage extends StatefulWidget {
 }
 
 class _ShopPageState extends State<ShopPage> {
-  String _selectedCategory = '全部';
+  String _selectedCategory = 'all';
   String _query = '';
-  int _cartCount = 0;
+  final Map<String, int> _cart = {};
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: const Text(
-          '宠物商城',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primaryDark),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 12),
-            child: Container(
-              width: 36, height: 36,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12),
-                boxShadow: const [
-                  BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1)),
-                ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  const Icon(Icons.shopping_cart_outlined, size: 20, color: AppColors.primaryDark),
-                  if (_cartCount > 0)
-                    Positioned(
-                      right: 5,
-                      top: 5,
-                      child: Container(
-                        padding: const EdgeInsets.all(3),
-                        decoration: const BoxDecoration(color: Color(0xFFFF6B6B), shape: BoxShape.circle),
-                        child: Text('', style: const TextStyle(fontSize: 9, color: Colors.white, fontWeight: FontWeight.w800)),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // Search bar
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: const [
-                  BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1)),
-                ],
-              ),
-              child: Row(
-                children: [
-                  const Icon(Icons.search, color: AppColors.textMuted, size: 20),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: TextField(
-                      onChanged: (value) => setState(() => _query = value.trim()),
-                      decoration: InputDecoration(
-                        border: InputBorder.none,
-                        hintText: '搜索宠物用品...',
-                        hintStyle: TextStyle(fontSize: 14, color: AppColors.textMuted),
-                        isDense: true,
-                        contentPadding: EdgeInsets.symmetric(vertical: 12),
-                      ),
-                    ),
-                  ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: AppColors.primaryLight,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.tune, size: 16, color: AppColors.primaryDark),
-                        SizedBox(width: 4),
-                        Text('筛选', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          // Category tabs
-          SizedBox(
-            height: 50,
-            child: ListView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              children: _buildCategories(),
-            ),
-          ),
-          // Product grid
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                mainAxisSpacing: 12,
-                crossAxisSpacing: 12,
-                childAspectRatio: 0.68,
-              ),
-              itemCount: _visibleProducts.length,
-              itemBuilder: (context, index) {
-                final p = _visibleProducts[index];
-                return _buildProductCard(p);
-              },
-            ),
-          ),
-        ],
+  int get _cartCount => _cart.values.fold(0, (a, b) => a + b);
+
+  void _addToCart(String productId, String name) {
+    setState(() {
+      _cart[productId] = (_cart[productId] ?? 0) + 1;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('已添加 $name 到购物车 🛒'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 
-  List<Widget> _buildCategories() {
-    final cats = ['全部', '主粮', '零食', '补剂', '用品', '玩具', '药品', '服饰'];
-    return cats.map((c) {
-      final isActive = c == _selectedCategory;
-      return Padding(
-        padding: const EdgeInsets.only(right: 10),
-        child: GestureDetector(
-          onTap: () => setState(() => _selectedCategory = c),
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+  @override
+  Widget build(BuildContext context) {
+    final visible = _visibleProducts;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFFAF6F0),
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Search bar (matching admin) ──
+            Padding(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: SizedBox(
+                height: 42,
+                child: TextField(
+                  onChanged: (v) => setState(() => _query = v.trim()),
+                  decoration: InputDecoration(
+                    filled: true,
+                    fillColor: Colors.white,
+                    hintText: '🔍 搜索商品名字/描述...',
+                    hintStyle: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFFFF8A3D),
+                    ),
+                    prefixIcon: const Icon(Icons.search,
+                        color: Color(0xFFFFB23F), size: 20),
+                    suffixIcon: _query.isNotEmpty
+                        ? GestureDetector(
+                            onTap: () =>
+                                setState(() => _query = ''),
+                            child: const Icon(Icons.close,
+                                color: Color(0xFF999999), size: 18),
+                          )
+                        : null,
+                    contentPadding:
+                        const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            // ── Category pills (matching admin: emoji + label) ──
+            SizedBox(
+              height: 38,
+              child: ListView(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                children: [
+                  _CatPill('all', '✨ 全部', _selectedCategory == 'all',
+                      () => setState(() => _selectedCategory = 'all')),
+                  _CatPill('food', '🍗 主粮', _selectedCategory == 'food',
+                      () => setState(() => _selectedCategory = 'food')),
+                  _CatPill('snack', '🍖 零食', _selectedCategory == 'snack',
+                      () => setState(() => _selectedCategory = 'snack')),
+                  _CatPill(
+                      'supplement',
+                      '🧪 补剂',
+                      _selectedCategory == 'supplement',
+                      () =>
+                          setState(() => _selectedCategory = 'supplement')),
+                  _CatPill('toy', '🎾 玩具', _selectedCategory == 'toy',
+                      () => setState(() => _selectedCategory = 'toy')),
+                  _CatPill(
+                      'supplies',
+                      '🛹 日用品',
+                      _selectedCategory == 'supplies',
+                      () =>
+                          setState(() => _selectedCategory = 'supplies')),
+                  _CatPill('medicine', '💊 医疗',
+                      _selectedCategory == 'medicine',
+                      () =>
+                          setState(() => _selectedCategory = 'medicine')),
+                ],
+              ),
+            ),
+            const SizedBox(height: 4),
+
+            // ── Product list ──
+            Expanded(
+              child: visible.isEmpty
+                  ? _buildEmpty()
+                  : ListView.builder(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 4),
+                      itemCount: visible.length,
+                      itemBuilder: (context, index) =>
+                          _buildProductCard(visible[index]),
+                    ),
+            ),
+
+            // ── Bottom cart bar (matching admin) ──
+            if (_cartCount > 0)
+              Container(
+                margin:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFFECE0),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFFFE2C4)),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      '🛒 购物车: $_cartCount 件',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFC2410C),
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () => _checkout(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          gradient: const LinearGradient(
+                            colors: [Color(0xFFFFB23F), Color(0xFFFF8A3D)],
+                          ),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Text(
+                          '立即下单',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEmpty() {
+    return Center(
+      child: Container(
+        margin: const EdgeInsets.all(12),
+        padding: const EdgeInsets.all(36),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFFFE7D1)),
+        ),
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('🔍', style: TextStyle(fontSize: 32)),
+            SizedBox(height: 10),
+            Text(
+              '没有找到相关商品 🐾',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: Color(0xFF8C6239),
+              ),
+            ),
+            SizedBox(height: 4),
+            Text(
+              '换个关键词或选择其他分类试试吧',
+              style: TextStyle(fontSize: 10, color: Color(0xFF999999)),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // ── Product card (list style, matching admin) ──
+  Widget _buildProductCard(Map<String, String> p) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFFFE7D1)),
+      ),
+      child: Row(
+        children: [
+          // Emoji icon
+          Container(
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: isActive ? AppColors.primary : Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              boxShadow: const [
-                BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1)),
-              ],
+              color: const Color(0xFFFFF7ED),
+              borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
             child: Text(
-              c,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-                color: isActive ? Colors.white : AppColors.textDark,
-              ),
+              p['emoji'] ?? '📦',
+              style: const TextStyle(fontSize: 24),
             ),
           ),
-        ),
-      );
-    }).toList();
-  }
-
-  List<Map<String, String>> get _visibleProducts {
-    return _products.where((p) {
-      final matchesCategory = _selectedCategory == '全部' || p['category'] == _selectedCategory;
-      final matchesQuery = _query.isEmpty || p['name']!.contains(_query) || p['desc']!.contains(_query);
-      return matchesCategory && matchesQuery;
-    }).toList();
-  }
-
-  Widget _buildProductCard(Map<String, String> product) {
-    final colors = [
-      const Color(0xFFFFE8D2), const Color(0xFFE8F3FF),
-      const Color(0xFFF0E8FF), const Color(0xFFFFF0CC),
-      const Color(0xFFE6FFF0), const Color(0xFFFFE8E8),
-    ];
-    final colorIndex = _products.indexOf(product) % colors.length;
-
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: const [
-          BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1)),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Product image placeholder
-          Container(
-            height: 130,
-            decoration: BoxDecoration(
-              color: colors[colorIndex],
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            ),
-            alignment: Alignment.center,
-            child: Text(product['emoji']!, style: const TextStyle(fontSize: 48)),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(12),
+          const SizedBox(width: 10),
+          // Info
+          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  product['name']!,
-                  style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: AppColors.textDark),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
+                  p['name'] ?? '',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF333333),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  p['desc'] ?? '养宠囤货优选',
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: Color(0xFF888888),
+                  ),
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  product['desc']!,
-                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      product['price']!,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.primaryDark),
-                    ),
-                    Container(
-                      width: 30, height: 30,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary,
-                        borderRadius: BorderRadius.circular(10),
+                      p['price'] ?? '',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFEF4444),
                       ),
-                      child: IconButton(
-                        padding: EdgeInsets.zero,
-                        icon: const Icon(Icons.add, color: Colors.white, size: 18),
-                        onPressed: () => _addToCart(product),
+                    ),
+                    Text(
+                      '库存: ${p['stock'] ?? '0'}',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: (int.tryParse(p['stock'] ?? '0') ?? 0) < 10
+                            ? const Color(0xFFEF4444)
+                            : const Color(0xFF999999),
                       ),
                     ),
                   ],
@@ -248,27 +284,206 @@ class _ShopPageState extends State<ShopPage> {
               ],
             ),
           ),
+          const SizedBox(width: 8),
+          // Add button
+          GestureDetector(
+            onTap: () => _addToCart(p['id']!, p['name']!),
+            child: Container(
+              width: 36,
+              height: 36,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFB23F),
+                borderRadius: BorderRadius.circular(18),
+              ),
+              child: const Icon(Icons.add, color: Colors.white, size: 20),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  void _addToCart(Map<String, String> product) {
-    setState(() => _cartCount++);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('${product['name']} 已加入购物车')),
+  void _checkout(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text(
+          '确认下单',
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: AppColors.textDark,
+          ),
+        ),
+        content: Text(
+          '购物车共 $_cartCount 件商品，确认立即下单？',
+          style: const TextStyle(color: AppColors.textMuted),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(
+              '取消',
+              style: TextStyle(
+                color: AppColors.textMuted,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              setState(() => _cart.clear());
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('下单成功！可在「个人-我的订单」中查看 🐾'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              );
+            },
+            child: const Text(
+              '立即下单',
+              style: TextStyle(
+                color: AppColors.primaryDark,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
-  final List<Map<String, String>> _products = const [
-    {'emoji': '🦴', 'name': '天然狗粮 5kg', 'desc': '进口无谷配方', 'price': '¥258', 'category': '主粮'},
-    {'emoji': '🐟', 'name': '三文鱼猫粮', 'desc': '高蛋白美毛', 'price': '¥198', 'category': '主粮'},
-    {'emoji': '🎾', 'name': '耐咬橡胶球', 'desc': '互动磨牙玩具', 'price': '¥39', 'category': '玩具'},
-    {'emoji': '🧪', 'name': '全能维生素营养片', 'desc': '增强免疫力 靓丽毛发', 'price': '¥89', 'category': '补剂'},
-    {'emoji': '🧴', 'name': '宠物沐浴露', 'desc': '温和不刺激', 'price': '¥68', 'category': '用品'},
-    {'emoji': '💊', 'name': '体内驱虫药', 'desc': '三月一次', 'price': '¥45', 'category': '药品'},
-    {'emoji': '🧸', 'name': '毛绒公仔', 'desc': '陪伴安抚玩具', 'price': '¥29', 'category': '玩具'},
-    {'emoji': '👔', 'name': '宠物小衣服', 'desc': '纯棉透气', 'price': '¥55', 'category': '服饰'},
-    {'emoji': '🍖', 'name': '鸡肉零食棒', 'desc': '训练奖励', 'price': '¥25', 'category': '零食'},
+
+  // ── Filtered products ──
+  List<Map<String, String>> get _visibleProducts {
+    return _products.where((p) {
+      final matchCat =
+          _selectedCategory == 'all' || p['category'] == _selectedCategory;
+      final matchQuery = _query.isEmpty ||
+          (p['name']?.contains(_query) == true) ||
+          (p['desc']?.contains(_query) == true);
+      return matchCat && matchQuery;
+    }).toList();
+  }
+
+  final List<Map<String, String>> _products = [
+    {
+      'id': 'prod-1',
+      'emoji': '🦴',
+      'name': '无谷全价全期猫粮 10kg',
+      'desc': '精选优质肉源，高蛋白，无谷低敏。',
+      'price': '¥299',
+      'stock': '150',
+      'category': 'food'
+    },
+    {
+      'id': 'prod-2',
+      'emoji': '🍖',
+      'name': '冻干鸡肉粒宠物零食 500g',
+      'desc': '低温冷冻干燥技术，保留新鲜营养，酥脆可口。',
+      'price': '¥59.90',
+      'stock': '450',
+      'category': 'snack'
+    },
+    {
+      'id': 'prod-3',
+      'emoji': '🛹',
+      'name': '剑麻耐磨猫抓板 L号',
+      'desc': '天然环保剑麻，不飞屑，保护家具。',
+      'price': '¥39',
+      'stock': '80',
+      'category': 'supplies'
+    },
+    {
+      'id': 'prod-4',
+      'emoji': '🎾',
+      'name': '电动趣味逗猫棒',
+      'desc': '不规则旋转，红外感应，猫咪的最爱。',
+      'price': '¥29.90',
+      'stock': '120',
+      'category': 'toy'
+    },
+    {
+      'id': 'prod-5',
+      'emoji': '💊',
+      'name': '宠物体内外一体驱虫药',
+      'desc': '快速起效，全面驱杀体内外寄生虫。',
+      'price': '¥88',
+      'stock': '200',
+      'category': 'medicine'
+    },
+    {
+      'id': 'prod-6',
+      'emoji': '🧪',
+      'name': '赖氨酸宠物营养膏 120g',
+      'desc': '补充成长所需赖氨酸，增强自体免疫。',
+      'price': '¥49',
+      'stock': '180',
+      'category': 'supplement'
+    },
+    {
+      'id': 'prod-7',
+      'emoji': '🐟',
+      'name': '深海高纯度 Omega-3 鱼油 100粒',
+      'desc': '高含量EPA/DHA，护肤美毛，爆毛亮眼。',
+      'price': '¥128',
+      'stock': '95',
+      'category': 'supplement'
+    },
   ];
 }
 
+// ── Category Pill Widget ──
+class _CatPill extends StatelessWidget {
+  final String key_;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _CatPill(this.key_, this.label, this.isSelected, this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            gradient: isSelected
+                ? const LinearGradient(
+                    colors: [Color(0xFFFFB23F), Color(0xFFFF8A3D)])
+                : null,
+            color: isSelected ? null : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected ? Colors.transparent : const Color(0xFFFFE7D1),
+            ),
+            boxShadow: isSelected
+                ? const [
+                    BoxShadow(
+                      color: Color(0x33FF8A3D),
+                      blurRadius: 6,
+                      offset: Offset(0, 2),
+                    )
+                  ]
+                : null,
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+              color: isSelected ? Colors.white : const Color(0xFF8C6239),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}

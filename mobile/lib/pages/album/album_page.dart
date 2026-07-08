@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../../theme/app_theme.dart';
 
 class AlbumPage extends StatefulWidget {
@@ -9,145 +9,186 @@ class AlbumPage extends StatefulWidget {
 }
 
 class _AlbumPageState extends State<AlbumPage> {
-  // Simulated photo grid with placeholder colors
-  final List<Map<String, String>> _photos = List.generate(
-    20,
-    (i) => {
-      'label': '照片 ${i + 1}',
-      'date': '${DateTime.now().month}月${(i % 30) + 1}日',
-      'emoji': ['🐶', '🐱', '🐾', '📸', '🌳', '🏠', '🎂', '🛁'][i % 8],
+  final List<Map<String, String>> _photos = [
+    {
+      'url':
+          'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=200',
+      'label': '阳光下的美喵 🐱'
     },
-  );
+    {
+      'url':
+          'https://images.unsplash.com/photo-1543466835-00a7907e9de1?w=200',
+      'label': '学会握手了！🐶'
+    },
+    {
+      'url':
+          'https://images.unsplash.com/photo-1522850959074-3a7507729a9c?w=200',
+      'label': '第一次洗澡 🛁'
+    },
+    {
+      'url':
+          'https://images.unsplash.com/photo-1504450758481-7338eba7524a?w=200',
+      'label': '午后晒太阳 ☀️'
+    },
+  ];
+
+  int _nextId = 4;
+
+  void _addPhoto() {
+    final urls = [
+      'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?w=200',
+      'https://images.unsplash.com/photo-1574158622682-e40e69881006?w=200',
+      'https://images.unsplash.com/photo-1518791841217-8f162f1e1131?w=200',
+      'https://images.unsplash.com/photo-1573865526739-10659fec78a5?w=200',
+    ];
+    setState(() {
+      _photos.insert(0, {
+        'url': urls[_nextId % urls.length],
+        'label': '新照片 #$_nextId',
+      });
+      _nextId++;
+    });
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: const Text('已添加一张照片！📸'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.backgroundLight,
-      appBar: AppBar(
-        title: const Text(
-          '成长相册',
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.primaryDark),
-        ),
-        centerTitle: true,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
-      body: Column(
-        children: [
-          // Monthly summary
-          Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: const [
-                BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1)),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 48, height: 48,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF3E8FF),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  alignment: Alignment.center,
-                  child: const Text('📸', style: TextStyle(fontSize: 26)),
-                ),
-                const SizedBox(width: 12),
-                const Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('本月回顾', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800, color: AppColors.textDark)),
-                      SizedBox(height: 2),
-                      Text('共记录 15 个美好瞬间', style: TextStyle(fontSize: 13, color: AppColors.textMuted)),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppColors.primaryLight,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: const Text('查看全部', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: AppColors.primaryDark)),
-                ),
-              ],
-            ),
-          ),
-          // Photo grid
-          Expanded(
-            child: GridView.builder(
-              padding: const EdgeInsets.all(16),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 3,
-                mainAxisSpacing: 10,
-                crossAxisSpacing: 10,
-                childAspectRatio: 0.9,
-              ),
-              itemCount: _photos.length,
-              itemBuilder: (context, index) {
-                final photo = _photos[index];
-                // Different pastel colors for different photos
-                final colors = [
-                  const Color(0xFFFFE8D2), const Color(0xFFE8F3FF),
-                  const Color(0xFFF0E8FF), const Color(0xFFFFF0CC),
-                  const Color(0xFFE6FFF0), const Color(0xFFFFE8E8),
-                  const Color(0xFFF3E8FF), const Color(0xFFFFF4E6),
-                ];
-                final color = colors[index % colors.length];
-
-                return GestureDetector(
-                  onTap: () => _showPhotoPreview(photo),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: color,
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: const [
-                        BoxShadow(color: Color(0x1A000000), blurRadius: 4, offset: Offset(0, 1)),
-                      ],
+      backgroundColor: const Color(0xFFFAF6F0),
+      body: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ── Top bar: photo count + add button (matching admin) ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    '📸 共 ${_photos.length} 张照片',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: Color(0xFF8C6239),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(photo['emoji']!, style: const TextStyle(fontSize: 36)),
-                        const SizedBox(height: 8),
-                        Text(
-                          photo['date']!,
-                          style: const TextStyle(fontSize: 11, color: AppColors.textMuted, fontWeight: FontWeight.w500),
+                  ),
+                  GestureDetector(
+                    onTap: _addPhoto,
+                    child: Container(
+                      width: 36,
+                      height: 36,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
                         ),
-                      ],
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x406366F1),
+                            blurRadius: 10,
+                            offset: Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add,
+                        color: Colors.white,
+                        size: 18,
+                      ),
                     ),
                   ),
-                );
-              },
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-      floatingActionButton: GestureDetector(
-        onTap: _addPhoto,
-        child: Container(
-          width: 56, height: 56,
-          decoration: BoxDecoration(
-            color: AppColors.primary,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(color: Color(0x40FFB900), blurRadius: 12, offset: Offset(0, 4)),
-            ],
-          ),
-          child: const Icon(Icons.add_a_photo, color: Colors.white, size: 28),
+
+            // ── 2-column photo grid (matching admin) ──
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 16),
+                gridDelegate:
+                    const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 10,
+                  crossAxisSpacing: 10,
+                  childAspectRatio: 0.85,
+                ),
+                itemCount: _photos.length,
+                itemBuilder: (context, index) {
+                  final photo = _photos[index];
+                  return _buildPhotoCard(photo);
+                },
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
+
+  Widget _buildPhotoCard(Map<String, String> photo) {
+    return GestureDetector(
+      onTap: () => _showPhotoPreview(photo),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFFFE7D1)),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+          ],
+        ),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Image
+            Expanded(
+              child: Image.network(
+                photo['url']!,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => Container(
+                  color: const Color(0xFFFFF7ED),
+                  alignment: Alignment.center,
+                  child: const Icon(Icons.pets,
+                      size: 36, color: Color(0xFFFFB23F)),
+                ),
+              ),
+            ),
+            // Label
+            Padding(
+              padding: const EdgeInsets.all(8),
+              child: Text(
+                photo['label']!,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: Color(0xFF666666),
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   void _showPhotoPreview(Map<String, String> photo) {
     showDialog(
       context: context,
-      builder: (context) => Dialog(
+      builder: (ctx) => Dialog(
         backgroundColor: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         child: Padding(
@@ -155,36 +196,43 @@ class _AlbumPageState extends State<AlbumPage> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Container(
-                height: 220,
-                decoration: BoxDecoration(color: const Color(0xFFFFE8D2), borderRadius: BorderRadius.circular(20)),
-                alignment: Alignment.center,
-                child: Text(photo['emoji']!, style: const TextStyle(fontSize: 72)),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: Image.network(
+                  photo['url']!,
+                  height: 220,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  errorBuilder: (_, __, ___) => Container(
+                    height: 220,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFF7ED),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    alignment: Alignment.center,
+                    child: const Icon(Icons.image,
+                        size: 64, color: Color(0xFFFFB23F)),
+                  ),
+                ),
               ),
               const SizedBox(height: 16),
-              Text(photo['label']!, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900, color: AppColors.textDark)),
-              const SizedBox(height: 4),
-              Text(photo['date']!, style: const TextStyle(fontSize: 13, color: AppColors.textMuted)),
+              Text(
+                photo['label']!,
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textDark,
+                ),
+              ),
               const SizedBox(height: 16),
-              PrimaryButton(text: '关闭', onPressed: () => Navigator.of(context).pop()),
+              PrimaryButton(
+                text: '关闭',
+                onPressed: () => Navigator.of(context).pop(),
+              ),
             ],
           ),
         ),
       ),
     );
   }
-
-  void _addPhoto() {
-    setState(() {
-      _photos.insert(0, {
-        'label': '新照片 ${_photos.length + 1}',
-        'date': '今天',
-        'emoji': '✨',
-      });
-    });
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('已添加一张演示照片')),
-    );
-  }
 }
-

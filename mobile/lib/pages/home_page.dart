@@ -28,7 +28,7 @@ class HomePage extends StatelessWidget {
       backgroundColor: const Color(0xFFFAF6F0),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 10),
+          padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
           child: Column(
             children: [
               _buildPetHeader(pet, context),
@@ -38,9 +38,9 @@ class HomePage extends StatelessWidget {
               _buildAdBanner(context),
               const SizedBox(height: 12),
               _buildDevicesCard(context),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
               _buildFeatureGrid(context),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -52,7 +52,7 @@ class HomePage extends StatelessWidget {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
-  // ── 1. Pet Header ──
+  // ── 1. Pet Header (matching admin design exactly) ──
   Widget _buildPetHeader(Pet? pet, BuildContext context) {
     final provider = context.read<AppProvider>();
     final name = pet?.name ?? '毛孩子';
@@ -64,7 +64,7 @@ class HomePage extends StatelessWidget {
 
     return Row(
       children: [
-        // Avatar — label-based like simulator's PetAvatar
+        // Avatar — label-based matching simulator's PetAvatar
         _PetLabelAvatar(emojiOrUrl: emoji, size: 48, radius: 24),
         const SizedBox(width: 12),
         Expanded(
@@ -78,15 +78,22 @@ class HomePage extends StatelessWidget {
                       name,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: Color(0xFF2D2621)),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFF2D2621),
+                      ),
                     ),
                   ),
                   const SizedBox(width: 6),
                   // GG / MM badge
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                     decoration: BoxDecoration(
-                      color: gender == '男孩' ? const Color(0xFFFEF3C7) : const Color(0xFFFCE7F3),
+                      color: gender == '男孩'
+                          ? const Color(0xFFFEF3C7)
+                          : const Color(0xFFFCE7F3),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
@@ -94,7 +101,9 @@ class HomePage extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
-                        color: gender == '男孩' ? const Color(0xFFEAB308) : const Color(0xFFEC4899),
+                        color: gender == '男孩'
+                            ? const Color(0xFFEAB308)
+                            : const Color(0xFFEC4899),
                       ),
                     ),
                   ),
@@ -104,7 +113,11 @@ class HomePage extends StatelessWidget {
                       breed,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 12, color: Color(0xFF8C6239), fontWeight: FontWeight.w500),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF8C6239),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                   // Dropdown to switch pets
@@ -113,15 +126,22 @@ class HomePage extends StatelessWidget {
                       onTap: () => _showPetSwitchSheet(context),
                       child: const Padding(
                         padding: EdgeInsets.all(4),
-                        child: Icon(Icons.arrow_drop_down, color: Color(0xFFFF8A3D), size: 18),
+                        child: Icon(
+                          Icons.arrow_drop_down,
+                          color: Color(0xFFFF8A3D),
+                          size: 18,
+                        ),
                       ),
                     ),
                 ],
               ),
               const SizedBox(height: 2),
               Text(
-                '相伴 $days 天',
-                style: const TextStyle(fontSize: 11, color: Color(0xFF999999)),
+                '相伴 $days 天 · 与你相伴${days}天',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: Color(0xFF999999),
+                ),
               ),
             ],
           ),
@@ -130,7 +150,8 @@ class HomePage extends StatelessWidget {
         GestureDetector(
           onTap: () => _quickAddPet(context),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
             decoration: BoxDecoration(
               color: const Color(0xFFFFF4DE),
               borderRadius: BorderRadius.circular(8),
@@ -141,7 +162,14 @@ class HomePage extends StatelessWidget {
               children: [
                 Icon(Icons.add, size: 12, color: Color(0xFFFF8A3D)),
                 SizedBox(width: 2),
-                Text('新的成员', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFFFF8A3D))),
+                Text(
+                  '新的成员',
+                  style: TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFFFF8A3D),
+                  ),
+                ),
               ],
             ),
           ),
@@ -150,12 +178,14 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ── 2. Status Pills (3-column) ──
+  // ── 2. Status Pills (3-column, matching admin) ──
   Widget _buildStatusPills(BuildContext context) {
     final provider = context.watch<AppProvider>();
-    final undoneReminders = provider.currentPetReminders.where((r) => !r.isCompleted).length;
+    final undoneReminders =
+        provider.currentPetReminders.where((r) => !r.isCompleted).length;
     final totalExpense = provider.currentPetTotalExpense;
-    final lowStock = provider.currentPetStockItems.where((s) => s.remaining == 0).length;
+    final lowStock =
+        provider.currentPetStockItems.where((s) => s.remaining == 0).length;
 
     return Row(
       children: [
@@ -192,7 +222,7 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ── 3. Ad Banner ──
+  // ── 3. Ad Banner (matching admin SPA banner) ──
   Widget _buildAdBanner(BuildContext context) {
     return GestureDetector(
       onTap: () => _openPage(context, const SpaPage()),
@@ -201,11 +231,16 @@ class HomePage extends StatelessWidget {
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(20),
           image: const DecorationImage(
-            image: NetworkImage('https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400'),
+            image: NetworkImage(
+                'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=400'),
             fit: BoxFit.cover,
           ),
           boxShadow: const [
-            BoxShadow(color: Color(0x1A2D2621), blurRadius: 12, offset: Offset(0, 4)),
+            BoxShadow(
+              color: Color(0x1A2D2621),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+            ),
           ],
         ),
         child: Container(
@@ -225,29 +260,50 @@ class HomePage extends StatelessWidget {
                 top: 0,
                 left: 0,
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFB23F),
                     borderRadius: BorderRadius.circular(6),
                   ),
-                  child: const Text('特惠预约', style: TextStyle(fontSize: 9, fontWeight: FontWeight.w900, color: Color(0xFF2D2621))),
+                  child: const Text(
+                    '特惠预约',
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: Color(0xFF2D2621),
+                    ),
+                  ),
                 ),
               ),
               // Center text
-              Positioned(
+              const Positioned(
                 left: 0,
                 bottom: 24,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       '👑 皇家夏季草本深层芳疗 SPA',
-                      style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: Colors.white, shadows: [Shadow(color: Colors.black54, blurRadius: 4)]),
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        shadows: [
+                          Shadow(color: Colors.black54, blurRadius: 4),
+                        ],
+                      ),
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     Text(
                       '瑞士负离子防静电防虫尊享大促，全国...',
-                      style: TextStyle(fontSize: 9, color: Colors.grey.shade300, shadows: const [Shadow(color: Colors.black54, blurRadius: 4)]),
+                      style: TextStyle(
+                        fontSize: 9,
+                        color: Color(0xFFCDD5E0),
+                        shadows: [
+                          Shadow(color: Colors.black54, blurRadius: 4),
+                        ],
+                      ),
                     ),
                   ],
                 ),
@@ -262,24 +318,33 @@ class HomePage extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     color: const Color(0xFFFF8A3D),
-                    boxShadow: const [BoxShadow(color: Color(0x66FF8A3D), blurRadius: 6)],
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x66FF8A3D),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
-                  child: const Icon(Icons.chevron_right, color: Colors.white, size: 16),
+                  child: const Icon(
+                    Icons.chevron_right,
+                    color: Colors.white,
+                    size: 16,
+                  ),
                 ),
               ),
               // Bottom dots
-              Positioned(
+              const Positioned(
                 bottom: 0,
                 left: 0,
                 right: 0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Container(width: 5, height: 5, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0x66FFFFFF))),
-                    const SizedBox(width: 4),
-                    Container(width: 12, height: 4, decoration: BoxDecoration(borderRadius: BorderRadius.circular(2), color: const Color(0xFFFFB23F))),
-                    const SizedBox(width: 4),
-                    Container(width: 5, height: 5, decoration: const BoxDecoration(shape: BoxShape.circle, color: Color(0x66FFFFFF))),
+                    _Dot(size: 5, active: false),
+                    SizedBox(width: 4),
+                    _Dot(size: 12, active: true),
+                    SizedBox(width: 4),
+                    _Dot(size: 5, active: false),
                   ],
                 ),
               ),
@@ -290,71 +355,117 @@ class HomePage extends StatelessWidget {
     );
   }
 
-  // ── 4. Devices Card ──
+  // ── 4. Devices Card (matching admin dark card) ──
   Widget _buildDevicesCard(BuildContext context) {
     return GestureDetector(
       onTap: () => _openPage(context, const DevicePage()),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFF1F2937), Color(0xFF111827)], begin: Alignment.topLeft, end: Alignment.bottomRight),
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1F2937), Color(0xFF111827)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
           borderRadius: BorderRadius.circular(20),
-          boxShadow: const [BoxShadow(color: Color(0x1F000000), blurRadius: 18, offset: Offset(0, 6))],
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x1F000000),
+              blurRadius: 18,
+              offset: Offset(0, 6),
+            ),
+          ],
         ),
         child: Row(
           children: [
             Container(
-              width: 40, height: 40,
+              width: 40,
+              height: 40,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
-                gradient: const LinearGradient(colors: [Color(0xFFFFB23F), Color(0xFFFF8A3D)]),
-                boxShadow: const [BoxShadow(color: Color(0x33FF8A3D), blurRadius: 10)],
+                gradient: const LinearGradient(
+                  colors: [Color(0xFFFFB23F), Color(0xFFFF8A3D)],
+                ),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Color(0x33FF8A3D),
+                    blurRadius: 10,
+                  ),
+                ],
               ),
               child: const Icon(Icons.sensors, color: Colors.white, size: 20),
             ),
             const SizedBox(width: 12),
-            Expanded(
+            const Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
                     children: [
-                      const Text('您的设备', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w900, color: Color(0xFFFFF8F0))),
-                      const SizedBox(width: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                        decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(4)),
-                        child: const Text('ONLINE', style: TextStyle(fontSize: 8, fontWeight: FontWeight.w900, color: Colors.white)),
+                      Text(
+                        '您的设备',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          color: Color(0xFFFFF8F0),
+                        ),
                       ),
+                      SizedBox(width: 6),
+                      _OnlineBadge(),
                     ],
                   ),
-                  const SizedBox(height: 2),
-                  Text('绑定宠物监控、GPS定位器、智能水机等', style: TextStyle(fontSize: 11, color: Colors.grey.shade400)),
+                  SizedBox(height: 2),
+                  Text(
+                    '绑定宠物监控、GPS定位器、智能水机等',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF9CA3AF),
+                    ),
+                  ),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: Color(0xCCFFB23F), size: 18),
+            const Icon(
+              Icons.chevron_right,
+              color: Color(0xCCFFB23F),
+              size: 18,
+            ),
           ],
         ),
       ),
     );
   }
 
-  // ── 5. Feature Grid (4 columns, circle icons like simulator) ──
+  // ── 5. Feature Grid (9 items, 4 columns, matching admin exactly) ──
   Widget _buildFeatureGrid(BuildContext context) {
     final features = [
-      _Feat('提醒', Icons.notifications_outlined, const Color(0xFFD97706), const Color(0xFFFEF3C7), () => _openPage(context, const ReminderListPage())),
-      _Feat('记账', Icons.payment_outlined, const Color(0xFF10B981), const Color(0xFFD1FAE5), () => _openPage(context, const AccountingPage())),
-      _Feat('食谱', Icons.restaurant, const Color(0xFF3B82F6), const Color(0xFFDBEAFE), () => _openPage(context, const RecipePage())),
-      _Feat('囤货', Icons.inventory_2_outlined, const Color(0xFF14B8A6), const Color(0xFFCCFBF1), () => _openPage(context, const StockPage())),
-      _Feat('记事', Icons.edit_note, const Color(0xFF8B5CF6), const Color(0xFFF3E8FF), () => _openPage(context, const NotesPage())),
-      _Feat('体重', Icons.monitor_weight_outlined, const Color(0xFFFF8A3D), const Color(0xFFFFF4DE), () => _openPage(context, const WeightPage())),
-      _Feat('病历', Icons.medical_services_outlined, const Color(0xFFEC4899), const Color(0xFFFCE7F3), () => _openPage(context, const MedicalPage())),
-      _Feat('相册', Icons.photo_camera_outlined, const Color(0xFF6366F1), const Color(0xFFE0E7FF), () => _openPage(context, const AlbumPage())),
-      _Feat('商城', Icons.shopping_bag_outlined, const Color(0xFFFF8A3D), const Color(0xFFFFF4DE), () => _openPage(context, const ShopPage()), highlight: true),
-      _Feat('AI管家', Icons.auto_awesome, AppColors.ai, const Color(0xFFECE9FF), onOpenAi, highlight: true),
-      _Feat('设备', Icons.devices_outlined, const Color(0xFF0EA5E9), const Color(0xFFE0F2FE), () => _openPage(context, const DevicePage())),
-      _Feat('SPA', Icons.spa_outlined, const Color(0xFF059669), const Color(0xFFECFDF5), () => _openPage(context, const SpaPage())),
+      _Feat('提醒', Icons.notifications_outlined, const Color(0xFFD97706),
+          const Color(0xFFFEF3C7),
+          () => _openPage(context, const ReminderListPage())),
+      _Feat('记账', Icons.payment_outlined, const Color(0xFF10B981),
+          const Color(0xFFD1FAE5),
+          () => _openPage(context, const AccountingPage())),
+      _Feat('食谱', Icons.restaurant, const Color(0xFF3B82F6),
+          const Color(0xFFDBEAFE),
+          () => _openPage(context, const RecipePage())),
+      _Feat('囤货', Icons.inventory_2_outlined, const Color(0xFF14B8A6),
+          const Color(0xFFCCFBF1),
+          () => _openPage(context, const StockPage())),
+      _Feat('记事', Icons.edit_note, const Color(0xFF8B5CF6),
+          const Color(0xFFF3E8FF),
+          () => _openPage(context, const NotesPage())),
+      _Feat('体重', Icons.monitor_weight_outlined,
+          const Color(0xFFFF8A3D), const Color(0xFFFFF4DE),
+          () => _openPage(context, const WeightPage())),
+      _Feat('病历', Icons.medical_services_outlined,
+          const Color(0xFFEC4899), const Color(0xFFFCE7F3),
+          () => _openPage(context, const MedicalPage())),
+      _Feat('商城', Icons.shopping_bag_outlined, const Color(0xFFFF8A3D),
+          const Color(0xFFFFF4DE),
+          () => _openPage(context, const ShopPage())),
+      _Feat('相册', Icons.photo_camera_outlined, const Color(0xFF6366F1),
+          const Color(0xFFE0E7FF),
+          () => _openPage(context, const AlbumPage())),
     ];
 
     return GridView.builder(
@@ -362,7 +473,7 @@ class HomePage extends StatelessWidget {
       physics: const NeverScrollableScrollPhysics(),
       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4,
-        mainAxisSpacing: 14,
+        mainAxisSpacing: 16,
         crossAxisSpacing: 6,
         childAspectRatio: 0.78,
       ),
@@ -384,15 +495,26 @@ class HomePage extends StatelessWidget {
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               color: feat.bg,
-              border: feat.highlight ? Border.all(color: const Color(0xFFFF8A3D), width: 1.5, strokeAlign: BorderSide.strokeAlignInside) : Border.all(color: Colors.black.withValues(alpha: 0.02)),
-              boxShadow: feat.highlight ? const [BoxShadow(color: Color(0x26FF8A3D), blurRadius: 10)] : const [BoxShadow(color: Color(0x05000000), blurRadius: 6)],
+              border: Border.all(
+                color: Colors.black.withValues(alpha: 0.02),
+              ),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x05000000),
+                  blurRadius: 6,
+                ),
+              ],
             ),
             child: Icon(feat.icon, color: feat.color, size: 22),
           ),
           const SizedBox(height: 6),
           Text(
             feat.label,
-            style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: feat.highlight ? const Color(0xFFFF8A3D) : const Color(0xFF4A3E3D)),
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF4A3E3D),
+            ),
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
@@ -414,7 +536,11 @@ class HomePage extends StatelessWidget {
       id: 'pet_${DateTime.now().millisecondsSinceEpoch}',
       name: names[rand],
       gender: rand % 2 == 0 ? '男孩' : '女孩',
-      type: emojis[rand] == '🐱' ? '猫咪' : emojis[rand] == '🐰' ? '小兔' : '狗狗',
+      type: emojis[rand] == '🐱'
+          ? '猫咪'
+          : emojis[rand] == '🐰'
+              ? '小兔'
+              : '狗狗',
       meetDate: DateTime.now(),
       breed: breeds[rand],
       emoji: emojis[rand],
@@ -423,7 +549,11 @@ class HomePage extends StatelessWidget {
     );
     provider.addPet(pet);
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已添加 ${pet.name} 🐾'), behavior: SnackBarBehavior.floating, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+      SnackBar(
+        content: Text('已添加 ${pet.name} 🐾'),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
     );
   }
 
@@ -434,16 +564,34 @@ class HomePage extends StatelessWidget {
 
     showModalBottomSheet(
       context: context,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(20),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade300, borderRadius: BorderRadius.circular(2)))),
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
             const SizedBox(height: 20),
-            const Text('切换宠物', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppColors.textDark)),
+            const Text(
+              '切换宠物',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                color: AppColors.textDark,
+              ),
+            ),
             const SizedBox(height: 16),
             ...pets.map((pet) {
               final isActive = currentPet?.id == pet.id;
@@ -456,24 +604,53 @@ class HomePage extends StatelessWidget {
                   margin: const EdgeInsets.only(bottom: 8),
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: isActive ? const Color(0xFFFFF4DE) : Colors.grey.shade50,
+                    color: isActive
+                        ? const Color(0xFFFFF4DE)
+                        : Colors.grey.shade50,
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: isActive ? const Color(0xFFFFB23F) : Colors.transparent, width: 2),
+                    border: Border.all(
+                      color: isActive
+                          ? const Color(0xFFFFB23F)
+                          : Colors.transparent,
+                      width: 2,
+                    ),
                   ),
                   child: Row(
                     children: [
-                      _PetLabelAvatar(emojiOrUrl: pet.emoji, size: 44, radius: 12),
+                      _PetLabelAvatar(
+                        emojiOrUrl: pet.emoji,
+                        size: 44,
+                        radius: 12,
+                      ),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(pet.name, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: AppColors.textDark)),
-                            Text('${pet.type} · 相伴 ${pet.daysTogether} 天', style: const TextStyle(fontSize: 12, color: AppColors.textMuted)),
+                            Text(
+                              pet.name,
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textDark,
+                              ),
+                            ),
+                            Text(
+                              '${pet.type} · 相伴 ${pet.daysTogether} 天',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: AppColors.textMuted,
+                              ),
+                            ),
                           ],
                         ),
                       ),
-                      if (isActive) const Icon(Icons.check_circle, color: Color(0xFFFFB23F), size: 24),
+                      if (isActive)
+                        const Icon(
+                          Icons.check_circle,
+                          color: Color(0xFFFFB23F),
+                          size: 24,
+                        ),
                     ],
                   ),
                 ),
@@ -483,7 +660,10 @@ class HomePage extends StatelessWidget {
             GestureDetector(
               onTap: () {
                 Navigator.of(ctx).pop();
-                showDialog(context: context, builder: (_) => const AddPetDialog());
+                showDialog(
+                  context: context,
+                  builder: (_) => const AddPetDialog(),
+                );
               },
               child: Container(
                 padding: const EdgeInsets.all(12),
@@ -494,9 +674,20 @@ class HomePage extends StatelessWidget {
                 ),
                 child: const Row(
                   children: [
-                    _PetLabelAvatar(emojiOrUrl: '', size: 44, radius: 12),
+                    _PetLabelAvatar(
+                      emojiOrUrl: '',
+                      size: 44,
+                      radius: 12,
+                    ),
                     SizedBox(width: 12),
-                    Text('添加新宠物', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFFE8791A))),
+                    Text(
+                      '添加新宠物',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFE8791A),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -516,7 +707,12 @@ class _PetLabelAvatar extends StatelessWidget {
   final String emojiOrUrl;
   final double size;
   final double radius;
-  const _PetLabelAvatar({required this.emojiOrUrl, required this.size, required this.radius});
+
+  const _PetLabelAvatar({
+    required this.emojiOrUrl,
+    required this.size,
+    required this.radius,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -541,30 +737,52 @@ class _PetLabelAvatar extends StatelessWidget {
     Color fg;
     switch (emojiOrUrl) {
       case '🐱':
-        label = 'CAT'; bg = const Color(0xFFFFF4DE); fg = const Color(0xFFFF8A3D);
+        label = 'CAT';
+        bg = const Color(0xFFFFF4DE);
+        fg = const Color(0xFFFF8A3D);
         break;
       case '🐶':
-        label = 'DOG'; bg = const Color(0xFFE0F2FE); fg = const Color(0xFF0284C7);
+        label = 'DOG';
+        bg = const Color(0xFFE0F2FE);
+        fg = const Color(0xFF0284C7);
         break;
       case '🐰':
-        label = 'RAB'; bg = const Color(0xFFFCE7F3); fg = const Color(0xFFDB2777);
+        label = 'RAB';
+        bg = const Color(0xFFFCE7F3);
+        fg = const Color(0xFFDB2777);
         break;
       case '🐹':
-        label = 'HAM'; bg = const Color(0xFFFEF3C7); fg = const Color(0xFFD97706);
+        label = 'HAM';
+        bg = const Color(0xFFFEF3C7);
+        fg = const Color(0xFFD97706);
         break;
-      case '🐻': case '🐼':
-        label = 'BER'; bg = const Color(0xFFF3F4F6); fg = const Color(0xFF4B5563);
+      case '🐻':
+      case '🐼':
+        label = 'BER';
+        bg = const Color(0xFFF3F4F6);
+        fg = const Color(0xFF4B5563);
         break;
       case '🐾':
-        label = 'PET'; bg = const Color(0xFFF5ECE1); fg = const Color(0xFFB45309);
+        label = 'PET';
+        bg = const Color(0xFFF5ECE1);
+        fg = const Color(0xFFB45309);
         break;
       default:
-        label = emojiOrUrl.isNotEmpty ? emojiOrUrl.substring(0, emojiOrUrl.length > 3 ? 3 : emojiOrUrl.length).toUpperCase() : 'PET';
-        bg = const Color(0xFFFFF4DE); fg = const Color(0xFFFF8A3D);
+        label = emojiOrUrl.isNotEmpty
+            ? emojiOrUrl
+                .substring(
+                  0,
+                  emojiOrUrl.length > 3 ? 3 : emojiOrUrl.length,
+                )
+                .toUpperCase()
+            : 'PET';
+        bg = const Color(0xFFFFF4DE);
+        fg = const Color(0xFFFF8A3D);
     }
 
     return Container(
-      width: size, height: size,
+      width: size,
+      height: size,
       decoration: BoxDecoration(
         color: bg,
         borderRadius: BorderRadius.circular(radius),
@@ -573,7 +791,12 @@ class _PetLabelAvatar extends StatelessWidget {
       alignment: Alignment.center,
       child: Text(
         label,
-        style: TextStyle(fontSize: size > 40 ? 12 : 9, fontWeight: FontWeight.w800, color: fg, letterSpacing: 0.5),
+        style: TextStyle(
+          fontSize: size > 40 ? 12 : 9,
+          fontWeight: FontWeight.w800,
+          color: fg,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -586,7 +809,13 @@ class _StatusPill extends StatelessWidget {
   final Color color;
   final VoidCallback onTap;
 
-  const _StatusPill({required this.icon, required this.label, required this.value, required this.color, required this.onTap});
+  const _StatusPill({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -598,7 +827,12 @@ class _StatusPill extends StatelessWidget {
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: const Color(0xFFEADEC9)),
-          boxShadow: const [BoxShadow(color: Color(0x02000000), blurRadius: 6)],
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x02000000),
+              blurRadius: 6,
+            ),
+          ],
         ),
         child: Column(
           children: [
@@ -607,13 +841,72 @@ class _StatusPill extends StatelessWidget {
               children: [
                 Icon(icon, size: 11, color: color),
                 const SizedBox(width: 4),
-                Text(label, style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: const Color(0xFF8C6239))),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF8C6239),
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 3),
-            Text(value, style: TextStyle(fontSize: 13, fontWeight: FontWeight.w900, color: color)),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w900,
+                color: color,
+              ),
+            ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _OnlineBadge extends StatelessWidget {
+  const _OnlineBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: const Text(
+        'ONLINE',
+        style: TextStyle(
+          fontSize: 8,
+          fontWeight: FontWeight.w900,
+          color: Colors.white,
+        ),
+      ),
+    );
+  }
+}
+
+class _Dot extends StatelessWidget {
+  final double size;
+  final bool active;
+
+  const _Dot({required this.size, required this.active});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size > 6 ? 4 : size,
+      decoration: BoxDecoration(
+        shape: size > 6 ? BoxShape.rectangle : BoxShape.circle,
+        borderRadius: size > 6 ? BorderRadius.circular(2) : null,
+        color: active
+            ? const Color(0xFFFFB23F)
+            : const Color(0x66FFFFFF),
       ),
     );
   }
@@ -625,6 +918,6 @@ class _Feat {
   final Color color;
   final Color bg;
   final VoidCallback onTap;
-  final bool highlight;
-  const _Feat(this.label, this.icon, this.color, this.bg, this.onTap, {this.highlight = false});
+
+  const _Feat(this.label, this.icon, this.color, this.bg, this.onTap);
 }

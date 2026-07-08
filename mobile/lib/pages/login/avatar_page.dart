@@ -2,6 +2,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:image_picker/image_picker.dart';
+import 'dart:convert';
 import '../../theme/app_theme.dart';
 import '../../services/app_provider.dart';
 
@@ -15,14 +16,13 @@ class AvatarPage extends StatefulWidget {
 class _AvatarPageState extends State<AvatarPage> {
   final ImagePicker _picker = ImagePicker();
 
-  // 预设的 emoji 选项
-  final List<String> _avatarOptions = const [
+  final List<String> _emojiOptions = const [
     '🐕', '🐩', '🐈', '🐇',
     '🐹', '🐰', '🦜', '🐠',
     '🦮', '🐕‍🦺', '🐈‍⬛', '🐢',
   ];
 
-  String? _selectedAvatar;
+  String _selectedAvatar = '🐕';
   Uint8List? _pickedImageBytes;
 
   @override
@@ -31,10 +31,12 @@ class _AvatarPageState extends State<AvatarPage> {
     final existing = context.read<AppProvider>().pendingPet;
     if (existing != null && existing.emoji.isNotEmpty) {
       _selectedAvatar = existing.emoji;
-    } else {
-      _selectedAvatar = '🐕';
     }
   }
+
+  bool get _hasPhoto =>
+      _pickedImageBytes != null ||
+      (_selectedAvatar.startsWith('http') || _selectedAvatar.startsWith('data:'));
 
   Future<void> _pickFromGallery() async {
     try {
@@ -48,8 +50,7 @@ class _AvatarPageState extends State<AvatarPage> {
         final bytes = await image.readAsBytes();
         setState(() {
           _pickedImageBytes = bytes;
-          // image path stored
-          _selectedAvatar = null; // 取消 emoji 选择
+          _selectedAvatar = '';
         });
       }
     } catch (e) {
@@ -76,8 +77,7 @@ class _AvatarPageState extends State<AvatarPage> {
         final bytes = await image.readAsBytes();
         setState(() {
           _pickedImageBytes = bytes;
-          // image path stored
-          _selectedAvatar = null;
+          _selectedAvatar = '';
         });
       }
     } catch (e) {
@@ -119,7 +119,8 @@ class _AvatarPageState extends State<AvatarPage> {
               const SizedBox(height: 20),
               ListTile(
                 leading: Container(
-                  width: 44, height: 44,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
@@ -135,7 +136,8 @@ class _AvatarPageState extends State<AvatarPage> {
               ),
               ListTile(
                 leading: Container(
-                  width: 44, height: 44,
+                  width: 44,
+                  height: 44,
                   decoration: BoxDecoration(
                     color: AppColors.primaryLight,
                     borderRadius: BorderRadius.circular(12),
@@ -149,10 +151,11 @@ class _AvatarPageState extends State<AvatarPage> {
                   _pickFromGallery();
                 },
               ),
-              if (_pickedImageBytes != null)
+              if (_hasPhoto)
                 ListTile(
                   leading: Container(
-                    width: 44, height: 44,
+                    width: 44,
+                    height: 44,
                     decoration: BoxDecoration(
                       color: Colors.red.shade50,
                       borderRadius: BorderRadius.circular(12),
@@ -165,7 +168,6 @@ class _AvatarPageState extends State<AvatarPage> {
                     Navigator.of(ctx).pop();
                     setState(() {
                       _pickedImageBytes = null;
-                      // reset
                       _selectedAvatar = '🐕';
                     });
                   },
@@ -192,125 +194,188 @@ class _AvatarPageState extends State<AvatarPage> {
                   children: const [
                     BackCircleButton(),
                     Spacer(),
-                    ProgressDots(total: 5, current: 4),
+                    ProgressDots(total: 7, current: 6),
                     Spacer(),
+                    SizedBox(width: 40),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
                 const Text(
                   '宠物头像',
-                  style: AppTextStyles.titleLarge,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    color: Color(0xFF2D2621),
+                  ),
                 ),
                 const SizedBox(height: 4),
                 const Text(
                   '选一个可爱的头像或上传照片',
-                  style: AppTextStyles.subtitle,
-                ),
-                const SizedBox(height: 28),
-
-                // 大的预览头像
-                Center(
-                  child: GestureDetector(
-                    onTap: _showPhotoSheet,
-                    child: Container(
-                      width: 100,
-                      height: 100,
-                      decoration: BoxDecoration(
-                        color: AppColors.primaryLight,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primary,
-                          width: 4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            spreadRadius: 2,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      alignment: Alignment.center,
-                      clipBehavior: Clip.antiAlias,
-                      child: _pickedImageBytes != null
-                          ? Image.memory(
-                              _pickedImageBytes!,
-                              width: 100,
-                              height: 100,
-                              fit: BoxFit.cover,
-                            )
-                          : Text(
-                              _selectedAvatar ?? '🐕',
-                              style: const TextStyle(fontSize: 48),
-                            ),
-                    ),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Color(0xFFA8621B),
                   ),
                 ),
                 const SizedBox(height: 24),
 
-                // Emoji 网格选择
-                AppCard(
+                // Large circular avatar preview (matching admin design)
+                Center(
+                  child: GestureDetector(
+                    onTap: _showPhotoSheet,
+                    child: Container(
+                      width: 88,
+                      height: 88,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFEF3C6),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: const Color(0xFFFFB23F),
+                          width: 4,
+                        ),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Color(0x4DFFB23F),
+                            blurRadius: 20,
+                            offset: Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      alignment: Alignment.center,
+                      child: _pickedImageBytes != null
+                          ? Image.memory(
+                              _pickedImageBytes!,
+                              width: 88,
+                              height: 88,
+                              fit: BoxFit.cover,
+                            )
+                          : _selectedAvatar.startsWith('http') ||
+                                  _selectedAvatar.startsWith('data:')
+                              ? Image.network(
+                                  _selectedAvatar,
+                                  width: 88,
+                                  height: 88,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (_, __, ___) => Text(
+                                    _selectedAvatar.isNotEmpty &&
+                                            !_selectedAvatar.startsWith('http') &&
+                                            !_selectedAvatar.startsWith('data:')
+                                        ? _selectedAvatar
+                                        : '🐕',
+                                    style: const TextStyle(fontSize: 42),
+                                  ),
+                                )
+                              : Text(
+                                  _selectedAvatar.isNotEmpty
+                                      ? _selectedAvatar
+                                      : '🐕',
+                                  style: const TextStyle(fontSize: 42),
+                                ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Upload / Change photo text (matching admin)
+                Center(
+                  child: GestureDetector(
+                    onTap: _showPhotoSheet,
+                    child: Text(
+                      _hasPhoto ? '📷 更换照片' : '📷 上传头像',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: Color(0xFFFF8A3D),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Emoji grid (matching admin design exactly)
+                Container(
                   padding: const EdgeInsets.all(16),
-                  color: Colors.white,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: const Color(0xFFFFE7D1)),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x0A000000),
+                        blurRadius: 4,
+                        offset: Offset(0, 1),
+                      ),
+                    ],
+                  ),
                   child: GridView.builder(
                     shrinkWrap: true,
                     physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 4,
-                      mainAxisSpacing: 8,
-                      crossAxisSpacing: 8,
+                      mainAxisSpacing: 6,
+                      crossAxisSpacing: 6,
                     ),
-                    itemCount: _avatarOptions.length,
+                    itemCount: _emojiOptions.length,
                     itemBuilder: (context, index) {
-                      final emoji = _avatarOptions[index];
+                      final emoji = _emojiOptions[index];
                       final isSelected = _selectedAvatar == emoji;
                       return GestureDetector(
                         onTap: () {
                           setState(() {
                             _selectedAvatar = emoji;
                             _pickedImageBytes = null;
-                            // reset
                           });
                         },
                         child: Container(
+                          height: 50,
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? AppColors.primaryLight
-                                : Colors.grey.shade50,
+                                ? const Color(0xFFFEF3C6)
+                                : Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: isSelected
-                                  ? AppColors.primary
-                                  : Colors.transparent,
-                              width: 2,
+                                  ? const Color(0xFFFFB23F)
+                                  : const Color(0xFFFFE7D1),
+                              width: isSelected ? 2 : 1,
                             ),
+                            boxShadow: isSelected
+                                ? const [
+                                    BoxShadow(
+                                      color: Color(0x40FFB23F),
+                                      blurRadius: 10,
+                                      offset: Offset(0, 3),
+                                    ),
+                                  ]
+                                : const [
+                                    BoxShadow(
+                                      color: Color(0x0A000000),
+                                      blurRadius: 3,
+                                      offset: Offset(0, 1),
+                                    ),
+                                  ],
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             emoji,
-                            style: const TextStyle(fontSize: 28),
+                            style: const TextStyle(fontSize: 24),
                           ),
                         ),
                       );
                     },
                   ),
                 ),
-                const SizedBox(height: 16),
 
-                // 从相册选择照片
-                DashedBorderButton(
-                  text: _pickedImageBytes != null ? '更换照片' : '从相册选择照片',
-                  icon: const Icon(Icons.photo_library_outlined, color: AppColors.primary, size: 20),
-                  onTap: _showPhotoSheet,
-                ),
                 const SizedBox(height: 20),
-
                 PrimaryButton(
                   text: '完成设置 🎉',
                   onPressed: () {
+                    final finalEmoji = _pickedImageBytes != null
+                        ? 'data:image/png;base64,${base64Encode(_pickedImageBytes!)}'
+                        : _selectedAvatar;
                     context.read<AppProvider>().updatePendingPet(
-                          emoji: _selectedAvatar ?? '🐕',
+                          emoji: finalEmoji,
                         );
                     Navigator.of(context).pushNamed('/profile-preview');
                   },

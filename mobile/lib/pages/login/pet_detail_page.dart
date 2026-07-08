@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../../theme/app_theme.dart';
 import '../../services/app_provider.dart';
 import '../../widgets/wheel_time_picker.dart';
-import 'gender_page.dart';
 
 class PetDetailPage extends StatefulWidget {
   final String petType;
@@ -102,29 +101,32 @@ class _PetDetailPageState extends State<PetDetailPage> {
                       ),
                     ),
                     const Spacer(),
-                    const ProgressDots(total: 5, current: 3),
+                    const ProgressDots(total: 7, current: 3),
                     const Spacer(),
                     const SizedBox(width: 40),
                   ],
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  '详细信息',
+                  '让我们更了解它',
                   style: TextStyle(
-                    fontSize: 24,
+                    fontSize: 18,
                     fontWeight: FontWeight.w900,
-                    color: AppColors.textPrimary,
+                    color: Color(0xFF2D2621),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  '让我们更了解 ${widget.petName}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textHint,
-                  ),
+                const SizedBox(height: 20),
+
+                // Name input
+                InputField(
+                  label: '🏷️ 它的名字',
+                  placeholder: '例如：旺财、咪咪、大白',
+                  controller: TextEditingController(text: widget.petName),
+                  onChanged: (_) {},
                 ),
-                const SizedBox(height: 28),
+                const SizedBox(height: 12),
+
+                // Breed input
                 InputField(
                   label: '🏷️ 品种',
                   placeholder: widget.petType == '其他'
@@ -136,6 +138,8 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   onChanged: (_) => setState(() {}),
                 ),
                 const SizedBox(height: 12),
+
+                // Birthday picker
                 _DatePickerField(
                   label: '🎂 宠物生日',
                   value: _formatDate(_birthday),
@@ -143,6 +147,8 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   onTap: _pickBirthday,
                 ),
                 const SizedBox(height: 12),
+
+                // Arrival date picker
                 _DatePickerField(
                   label: '🏠 到家时间',
                   value: _formatDate(_arrivalDate),
@@ -150,6 +156,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                   onTap: _pickArrivalDate,
                 ),
                 const SizedBox(height: 28),
+
                 PrimaryButton(
                   text: '下一步 →',
                   enabled: _canProceed,
@@ -169,11 +176,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
                                 birthday: _formatDate(_birthday),
                                 emoji: emoji,
                               );
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => const GenderPage(),
-                            ),
-                          );
+                          Navigator.of(context).pushNamed('/gender');
                         }
                       : null,
                 ),
@@ -187,6 +190,7 @@ class _PetDetailPageState extends State<PetDetailPage> {
   }
 }
 
+/// Date picker field matching admin design — card with label, value and calendar icon
 class _DatePickerField extends StatelessWidget {
   final String label;
   final String value;
@@ -210,11 +214,12 @@ class _DatePickerField extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFEADEC9)),
           boxShadow: const [
             BoxShadow(
-              color: Color(0x1A000000),
-              blurRadius: 3,
-              offset: Offset(0, 1),
+              color: Color(0x0A000000),
+              blurRadius: 4,
+              offset: Offset(0, 2),
             ),
           ],
         ),
@@ -226,31 +231,28 @@ class _DatePickerField extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: AppColors.textFieldLabel,
+                color: Color(0xFF8C6239),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Row(
               children: [
                 Expanded(
                   child: Text(
                     isEmpty ? placeholder : value,
-                    style: isEmpty
-                        ? const TextStyle(
-                            fontSize: 16,
-                            color: Color(0x801E2939),
-                          )
-                        : const TextStyle(
-                            fontSize: 16,
-                            color: Color(0xFF1E2939),
-                            fontWeight: FontWeight.w500,
-                          ),
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: isEmpty
+                          ? const Color(0xFFC0A080)
+                          : const Color(0xFF2D2621),
+                      fontWeight: isEmpty ? FontWeight.w400 : FontWeight.w600,
+                    ),
                   ),
                 ),
                 const Icon(
-                  Icons.keyboard_arrow_down,
-                  color: AppColors.textMuted,
-                  size: 22,
+                  Icons.calendar_today,
+                  color: Color(0xFFC0A080),
+                  size: 18,
                 ),
               ],
             ),

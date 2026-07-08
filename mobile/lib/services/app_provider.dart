@@ -1,4 +1,4 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import '../models/pet.dart';
 import '../models/reminder.dart';
 import '../models/expense.dart';
